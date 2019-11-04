@@ -14,7 +14,6 @@ connection.connect(function(err){
     displayInventory();
 });
 
-
 function displayInventory(){
     connection.query(
         "SELECT * FROM products",
@@ -161,7 +160,6 @@ function updateInventory(data){
             });
     });
 }
-
 
 function orderInfo( itemid, productname, department, price, quantity){
     this.item_id = itemid;
