@@ -112,10 +112,10 @@ function customerOrder(){
                                     }
                                 }
                             ]).then(function(ans){
-                                let thisOrder = new orderInfo(res[0].item_id, res[0].product_name, res[0].department_name, res[0].price,ans.newquantity);
+                                let thisOrder = new orderInfo(res[0].item_id, res[0].product_name, res[0].department_name, res[0].cost, res[0].price,res[0].stock_quantity);
                                 let data = new Array(thisOrder);
                                 console.log("----------Order placed!----------");
-                                updateInventory(data).then(function(success){
+                                updateInventory(data, quantity).then(function(success){
                                     console.log(success);
                                     userPrompt();
                                 }).catch(function(err){
@@ -129,11 +129,10 @@ function customerOrder(){
                         }
                     });
                 }else{
-                    let thisOrder = new orderInfo(res[0].item_id, res[0].product_name, res[0].department_name, res[0].price,quantity);
+                    let thisOrder = new orderInfo(res[0].item_id, res[0].product_name, res[0].department_name, res[0].cost, res[0].price,res[0].stock_quantity);
                     let data = new Array(thisOrder);
-                    console.log(data);
                     console.log("----------Order Placed----------");
-                    updateInventory(data).then(function(success){
+                    updateInventory(data, quantity).then(function(success){
                         console.log(success);
                         userPrompt();
                     }).catch(function(err){
@@ -143,28 +142,35 @@ function customerOrder(){
                 }
             }
         )
-
     });
 }
 
-function updateInventory(data){
+function updateInventory(data, quantity){
     let itemInfo = data;
+    let profit = (itemInfo[0].price - itemInfo[0].cost)*quantity;
     return new Promise(function(reslove, reject){
         connection.query(
-            "UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?",
-            [itemInfo[0].stock_quantity, itemInfo[0].item_id, itemInfo[0].item_id],
+            "UPDATE products SET stock_quantity = stock_quantity - ?,  product_sales = product_sales + ? WHERE item_id = ?",
+            [quantity, profit, itemInfo[0].item_id],
             function (err){
                 if(err) return reject(err);
-                displayOrder(itemInfo);
-                return reslove("----------Order Complete----------");
             });
+        connection.query(
+            "UPDATE departments SET product_sales = product_sales + ?, total_profit = -over_head_costs + product_sales WHERE department_name = ?",
+            [profit, itemInfo[0].department_name],
+            function(err){
+                if(err) return reject(err);
+                displayOrder(itemInfo, quantity);
+                return reslove("----------Order Complete----------");
+        });
     });
 }
 
-function orderInfo( itemid, productname, department, price, quantity){
+function orderInfo( itemid, productname, department, cost, price,quantity){
     this.item_id = itemid;
     this.product_name = productname;
     this.department_name = department;
+    this.cost = cost;
     this.price = price;
     this.stock_quantity = quantity;
 }
@@ -249,7 +255,7 @@ function displayItems(data) {
     }
 }
 
-function displayOrder(data) {
+function displayOrder(data, quantity) {
     let inventoryData = data;
     let idTitle = "Item ID";
     let productTitle = "Product Name";
@@ -279,8 +285,8 @@ function displayOrder(data) {
         if ( inventoryData[i].price.toFixed(2).toString().length > priceMaxSpace){
             priceMaxSpace = inventoryData[i].price.toFixed(2).toString().length
         }
-        if ( inventoryData[i].stock_quantity.toString().length > stockMaxSpace){
-            stockMaxSpace = inventoryData[i].stock_quantity.toString().length;
+        if ( quantity.toString().length > stockMaxSpace){
+            stockMaxSpace = quantity.toString().length;
         }
     }
 
@@ -296,7 +302,7 @@ function displayOrder(data) {
         let productName = inventoryData[i].product_name+spaceFinder(productMaxSpace-inventoryData[i].product_name.length);
         let department = inventoryData[i].department_name+spaceFinder(departmentMaxSpace-inventoryData[i].department_name.length);
         let price = inventoryData[i].price.toFixed(2)+spaceFinder(priceMaxSpace - inventoryData[i].price.toFixed(2).toString().length);
-        let stock = inventoryData[i].stock_quantity+spaceFinder(stockMaxSpace-inventoryData[i].stock_quantity.toString().length);
+        let stock = quantity+spaceFinder(stockMaxSpace-quantity.toString().length);
         productOutput = "| "+itemId+" | "+productName+" | "+department+" | "+price+" | "+stock+" |";
         displayArray.push(productOutput);
     }

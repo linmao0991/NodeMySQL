@@ -262,11 +262,13 @@ function displayItems(data) {
     let departTitle = "Department";
     let priceTitle = "Price";
     let quantityTitle = "Stock";
+    let productSalesTitle = "Product Sales"
     let idMaxSpace = idTitle.length;
     let productMaxSpace = productTitle.length;
     let departmentMaxSpace = departTitle.length;
     let priceMaxSpace = priceTitle.length;
     let stockMaxSpace = quantityTitle.length;
+    let productSalesMax = productSalesTitle.length;
     let productOutput = "";
     let dashDivider = "";
     let invetoryTitles = "";
@@ -288,6 +290,9 @@ function displayItems(data) {
         if ( inventoryData[i].stock_quantity.toString().length > stockMaxSpace){
             stockMaxSpace = inventoryData[i].stock_quantity.toString().length;
         }
+        if ( inventoryData[i].product_sales.toFixed(2).toString().length > productSalesMax){
+            productSalesMax = inventoryData[i].product_sales.toFixed(2).toString().length;
+        }
     }
 
     idTitle = idTitle+spaceFinder(idMaxSpace-idTitle.length);
@@ -295,7 +300,8 @@ function displayItems(data) {
     departTitle = departTitle+spaceFinder(departmentMaxSpace-departTitle.length);
     priceTitle = priceTitle+spaceFinder(priceMaxSpace-priceTitle.length);
     quantityTitle = quantityTitle+spaceFinder(stockMaxSpace-quantityTitle.length);
-    invetoryTitles = "| "+idTitle+" | "+productTitle+" | "+departTitle+" | "+priceTitle+" | "+quantityTitle+" |";
+    productSalesTitle = productSalesTitle+spaceFinder(productSalesMax-productSalesTitle.length);
+    invetoryTitles = "| "+idTitle+" | "+productTitle+" | "+departTitle+" | "+priceTitle+" | "+quantityTitle+" | "+productSalesTitle+" |";
     
     for (let i = 0; i < inventoryData.length; i++){
         let itemId =  inventoryData[i].item_id+spaceFinder(idMaxSpace-inventoryData[i].item_id.toString().length);
@@ -303,7 +309,8 @@ function displayItems(data) {
         let department = inventoryData[i].department_name+spaceFinder(departmentMaxSpace-inventoryData[i].department_name.length);
         let price = inventoryData[i].price.toFixed(2)+spaceFinder(priceMaxSpace - inventoryData[i].price.toFixed(2).toString().length);
         let stock = inventoryData[i].stock_quantity+spaceFinder(stockMaxSpace-inventoryData[i].stock_quantity.toString().length);
-        productOutput = "| "+itemId+" | "+productName+" | "+department+" | "+price+" | "+stock+" |";
+        let productSales = inventoryData[i].product_sales.toFixed(2)+spaceFinder(productSalesMax-inventoryData[i].product_sales.toFixed(2).toString().length);
+        productOutput = "| "+itemId+" | "+productName+" | "+department+" | "+price+" | "+stock+" | "+productSales+" |";
         displayArray.push(productOutput);
     }
     dashDivider = dashFinder(productOutput.length);
